@@ -5,8 +5,10 @@ static sf::Int32 MS_PER_UPDATE = 10;
 
 Game::Game() :
 	m_window(sf::VideoMode(1920, 1080), "AI Lab"),
-	m_player(new Player(sf::Vector2f(1920 / 2, 1080 / 2), sf::Vector2f(1,1))),
-	m_seekAi(new Ai("Seek", sf::Vector2f(100, 100), m_player))
+	m_player(new Player(sf::Vector2f(1920 / 2, 1080 / 2), sf::Vector2f(1, 1))),
+	m_seekAi(new Ai("Seek", sf::Vector2f(100, 100), m_player)),
+	m_wanderAi(new Ai("Wander", sf::Vector2f(1280, 1000), m_player)),
+	m_fleeAi(new Ai("Flee", sf::Vector2f(1280, 300), m_player))
 {
 	init();
 	m_aTexture.loadFromFile("Alien.png");
@@ -14,6 +16,8 @@ Game::Game() :
 
 	m_player->setTexture(m_pTexture);
 	m_seekAi->setTexture(m_aTexture);
+	m_wanderAi->setTexture(m_aTexture);
+	m_fleeAi->setTexture(m_aTexture);
 }
 
 void Game::init()
@@ -67,6 +71,8 @@ void Game::update()
 {
 	m_player->update();
 	m_seekAi->update();
+	m_wanderAi->update();
+	m_fleeAi->update();
 }
 
 void Game::render()
@@ -75,6 +81,8 @@ void Game::render()
 
 	m_player->render(m_window);
 	m_seekAi->render(m_window);
+	m_wanderAi->render(m_window);
+	m_fleeAi->render(m_window);
 
 	m_window.display(); //Display all drawn items
 }

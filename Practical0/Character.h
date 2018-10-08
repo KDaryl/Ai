@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <random>
 class Character
 {
 public:
@@ -13,6 +14,13 @@ public:
 	virtual void decSpeed() = 0;
 
 	static float length(sf::Vector2f& v) { return sqrtf(v.x * v.x + v.y * v.y); }
-	static float angle(sf::Vector2f& a, sf::Vector2f& b) { return (a.x * b.x + a.y * b.y) / (length(a) * length(b)); }
 	static sf::Vector2f normalise(sf::Vector2f v) { return v / length(v); }
+	static float distance(sf::Vector2f v1, sf::Vector2f v2) { return sqrtf(powf((v2.x - v1.x), 2) + powf((v2.y - v1.y), 2)); } //Distance between two points
+	static int iRand(int min, int max) //Generate random integer between min and max
+	{
+		std::random_device rd;  //Will be used to obtain a seed for the random number engine
+		std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+		std::uniform_int_distribution<> dis(min, max);
+		return dis(gen);
+	};
 };

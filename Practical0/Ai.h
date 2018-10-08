@@ -11,7 +11,7 @@ public:
 	void seekUpdate();
 	void wanderUpdate();
 	void fleeUpdate();
-	float getOrientation(float orientation, sf::Vector2f vel);
+	float getOrientation(sf::Vector2f vel);
 	void render(sf::RenderWindow & window);
 	void setTexture(sf::Texture& texture);
 	void clampPos();
@@ -25,5 +25,8 @@ private:
 	float m_speed, m_rotation;
 	std::string type; //The type of ai
 	Player* m_player;
+
+	//Wander variables
+	sf::Clock* m_wanderClock;
 };
 

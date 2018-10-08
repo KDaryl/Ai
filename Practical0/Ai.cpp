@@ -6,6 +6,11 @@ Ai::Ai(std::string name, sf::Vector2f pos, Player* player) :
 	m_position(pos),
 	m_player(player)
 {
+	if (type == "Wander") //Set our clock and start it
+	{
+		m_wanderClock = new sf::Clock();
+		m_wanderClock->restart();
+	}
 }
 
 Ai::~Ai()
@@ -25,42 +30,65 @@ void Ai::update()
 	clampPos(); //Wrap our ai around
 
 	m_sprite.setPosition(m_position); //Set our sprites position
+	m_sprite.setRotation(m_rotation); //Set our sprites rotation
 }
 
 void Ai::seekUpdate()
 {
-	float direction = angle(m_player->pos(), m_position);
-	m_velocity = sf::Vector2f(cos(direction * 0.0174533), sin(direction * 0.0174533));
-	if (length(m_velocity) > 0)
-		m_velocity = normalise(m_velocity);
+	sf::Vector2f dist = m_player->pos() - m_position; //Get the distance between the ai and the player(target)
+	float maxSpeed = 1.5f;
+	float d = distance(m_player->pos(), m_position); //Get the distance from the player
 
-	m_velocity *= 100.0f;
-	m_position += m_velocity * (1 / 60.0f);
-	m_sprite.setRotation(direction);
-	/*
-	m_velocity = m_player->pos() - m_position;
-	m_velocity = normalise(m_velocity);
-	m_velocity *= .5f;
-	m_rotation = getOrientation(m_rotation, m_velocity);
+	//Change speed depedning on distance
+	if (d < 200)
+		maxSpeed = .75f;
+	if (d < 75)
+		maxSpeed = 0;
 
-	m_sprite.setRotation(m_rotation);
+	m_velocity = normalise(dist) * maxSpeed;
 	m_position += m_velocity;
-	*/
+	m_rotation = getOrientation(m_velocity);
 }
 
 void Ai::wanderUpdate()
 {
+	if (m_wanderClock->getElapsedTime().asSeconds() > 2) //Every 2 seconds move to the right or left by 3 degrees in either direction
+	{
+		m_wanderClock->restart();
+		m_rotation += iRand(-40, 40);
+	}
+
+	sf::Vector2f direction = sf::Vector2f(cos(m_rotation * 0.0174533), sin(m_rotation * 0.0174533));
+	if (length(direction) > 0)
+		direction = normalise(direction);
+
+	m_velocity = direction * 1.5f;
+
+	m_position += m_velocity;
 }
 
 void Ai::fleeUpdate()
 {
+	sf::Vector2f dist = m_position - m_player->pos(); //Get the distance between the ai and the player(target)
+	float maxSpeed = 1.5f;
+	float d = distance(m_player->pos(), m_position); //Get the distance from the player
+
+													 //Change speed depedning on distance
+	if (d < 200)
+		maxSpeed = .75f;
+	if (d < 75)
+		maxSpeed = 0;
+
+	m_velocity = normalise(dist) * maxSpeed;
+	m_position += m_velocity;
+	m_rotation = getOrientation(m_velocity);
 }
 
-float Ai::getOrientation(float orientation, sf::Vector2f vel)
+float Ai::getOrientation(sf::Vector2f vel)
 {
 	if (length(vel) > 0)
-		return atan2(m_position.y, m_position.x) * 57.2958;
-	return orientation;
+		return atan2(vel.y, vel.x) * 57.2958;
+	return m_rotation;
 }
 
 void Ai::render(sf::RenderWindow & window)
