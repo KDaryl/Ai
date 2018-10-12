@@ -19,13 +19,13 @@ public:
 	void seekUpdate(sf::Vector2f target = sf::Vector2f(0, 0));
 	void wanderUpdate();
 	void fleeUpdate();
+	void pursueUpdate();
+	void arriveUpdate();
+
 	float getOrientation(sf::Vector2f vel);
 	void render(sf::RenderWindow & window);
 	void setTexture(sf::Texture& texture);
-
-	void getTargetRotation(Kinematic& k);
-	void getTargetVelocity(Kinematic& k);
-	void getTargetAccel(Kinematic& k);
+	void setArriveSpeed(float nearSpeed);
 
 	void truncate(sf::Vector2f& v, float max);
 
@@ -35,7 +35,11 @@ public:
 	void incSpeed();
 	void decSpeed();
 private:
-	sf::Vector2f m_velocity, m_position;
+	sf::RectangleShape m_box;
+	sf::Text m_text;
+	sf::Font m_font;
+
+	sf::Vector2f m_velocity, m_position, m_target;
 	sf::Sprite m_sprite;
 	float m_speed, m_rotation;
 	std::string type; //The type of ai
@@ -43,6 +47,8 @@ private:
 
 	//Wander variables
 	sf::Clock* m_wanderClock;
-	sf::Vector2f m_wanderTarget;
+
+	//Arrive variables
+	float m_arriveSpeed;
 };
 

@@ -19,5 +19,5 @@ private:
 	sf::RenderWindow m_window; //Render window
 	sf::Texture m_pTexture, m_aTexture;
 	Player * m_player;
-	Character *m_wanderAi, *m_seekAi, *m_fleeAi;
+	Character *m_wanderAi, *m_seekAi, *m_fleeAi, *m_pursueAi, *m_slowArrive, *m_fastArrive;
 };

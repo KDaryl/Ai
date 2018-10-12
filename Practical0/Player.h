@@ -17,6 +17,7 @@ public:
 
 	//Getters
 	sf::Vector2f& pos() { return m_position; }
+	sf::Vector2f& vel() { return m_velocity; }
 private:
 	sf::Vector2f m_velocity, m_position;
 	sf::Sprite m_sprite;
