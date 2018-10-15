@@ -1,4 +1,5 @@
 #include "Player.h"
+#include <iostream>
 
 Player::Player(sf::Vector2f pos, sf::Vector2f vel) :
 	m_position(pos),
@@ -32,7 +33,6 @@ void Player::update()
 	m_velocity = direction * m_speed;
 
 	m_position += m_velocity * (1 /60.f);
-
 	clampPos();
 
 	m_sprite.setPosition(m_position);

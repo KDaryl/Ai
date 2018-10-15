@@ -1,6 +1,4 @@
-﻿  Ai.cpp
-c:\users\daryl k\desktop\repos\ai for games\practical0\ai.cpp(92): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\daryl k\desktop\repos\ai for games\practical0\ai.cpp(154): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
-c:\users\daryl k\desktop\repos\ai for games\practical0\ai.cpp(174): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\daryl k\desktop\repos\ai for games\practical0\ai.cpp(192): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+﻿  Player.cpp
+c:\users\daryl k\desktop\repos\ai for games\practical0\player.cpp(29): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\daryl k\desktop\repos\ai for games\practical0\player.cpp(49): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Practical0.vcxproj -> C:\Users\Daryl K\Desktop\Repos\AI for Games\Practical0\Debug\Practical0.exe

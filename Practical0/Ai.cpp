@@ -6,7 +6,8 @@ Ai::Ai(std::string name, sf::Vector2f pos, Player* player) :
 	m_position(pos),
 	m_player(player),
 	m_velocity(0,0),
-	m_target(0,0)
+	m_target(0,0),
+	m_halfCone(45)
 {
 	if (type == "Wander") //Set our clock and start it
 	{
@@ -53,6 +54,8 @@ void Ai::update()
 	if (type == "Arrive")
 		arriveUpdate();
 
+	collisionAvoidance();
+
 	clampPos(); //Wrap our ai around
 
 	m_sprite.setPosition(m_position); //Set our sprites position
@@ -72,7 +75,7 @@ void Ai::seekUpdate(sf::Vector2f target)
 
 	float dt = (1 / 60.0f);
 	sf::Vector2f desired = normalise(newTarget - m_position);
-	desired = normalise(desired) * maxSpeed;
+	desired *= maxSpeed;
 
 	sf::Vector2f steering = desired - m_velocity;
 	truncate(steering, 10.0f);
@@ -148,8 +151,24 @@ void Ai::arriveUpdate()
 	}
 }
 
+void Ai::collisionAvoidance()
+{
+	auto direction = normalise(m_target - m_position);
+	auto orientation = sf::Vector2f(cos(m_rotation), sin(m_rotation));
+	auto dotProd = dot(direction, orientation);
+
+	auto angle = atan(dotProd) * 57.2958;
+	if (angle < m_halfCone)
+		std::cout << "In cone" << std::endl;
+
+	//std::cout << direction.x << " " << direction.y << std::endl;
+	//std::cout << orientation.x << " " << orientation.y << std::endl;
+}
+
 float Ai::getOrientation(sf::Vector2f vel)
 {
+	return length(vel) > 0 ? atan2(vel.y, vel.x) * 57.2958 : m_rotation;
+
 	if (length(vel) > 0)
 		return atan2(vel.y, vel.x) * 57.2958;
 	return m_rotation;

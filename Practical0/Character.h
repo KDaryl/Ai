@@ -23,4 +23,5 @@ public:
 		std::uniform_int_distribution<> dis(min, max);
 		return dis(gen);
 	};
+	static float dot(sf::Vector2f v1, sf::Vector2f v2) { return v1.x * v2.x + v1.y * v2.y; } //Dot product
 };

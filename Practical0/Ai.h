@@ -21,6 +21,7 @@ public:
 	void fleeUpdate();
 	void pursueUpdate();
 	void arriveUpdate();
+	void collisionAvoidance();
 
 	float getOrientation(sf::Vector2f vel);
 	void render(sf::RenderWindow & window);
@@ -50,5 +51,7 @@ private:
 
 	//Arrive variables
 	float m_arriveSpeed;
+
+	int m_halfCone;
 };
 
