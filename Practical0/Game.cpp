@@ -22,6 +22,15 @@ Game::Game() :
 	m_pursueAi->setTexture(m_aTexture);
 	m_slowArrive->setTexture(m_aTexture);
 	m_fastArrive->setTexture(m_aTexture);
+
+
+	m_ai.push_back(m_seekAi);
+	m_ai.push_back(m_wanderAi);
+	m_ai.push_back(m_pursueAi);
+	m_ai.push_back(m_slowArrive);
+	m_ai.push_back(m_fastArrive);
+	for (auto& ai : m_ai)
+		ai->setAiVec(m_ai);
 }
 
 void Game::init()
@@ -70,15 +79,11 @@ void Game::processEvents()
 	}
 }
 
-
 void Game::update()
 {
 	m_player->update();
-	m_seekAi->update();
-	m_wanderAi->update();
-	m_pursueAi->update();
-	m_slowArrive->update();
-	m_fastArrive->update();
+	for (auto& ai : m_ai)
+		ai->update();
 }
 
 void Game::render()
@@ -86,11 +91,8 @@ void Game::render()
 	m_window.clear(sf::Color::White); //Clear all previously drawn items
 
 	m_player->render(m_window);
-	m_seekAi->render(m_window);
-	m_wanderAi->render(m_window);
-	m_pursueAi->render(m_window);
-	m_slowArrive->render(m_window);
-	m_fastArrive->render(m_window);
+	for (auto& ai : m_ai)
+		ai->render(m_window);
 
 	m_window.display(); //Display all drawn items
 }

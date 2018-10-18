@@ -21,12 +21,16 @@ public:
 	void fleeUpdate();
 	void pursueUpdate();
 	void arriveUpdate();
-	void collisionAvoidance();
+	sf::Vector2f collisionAvoidance();
+	sf::Vector2f findMostThreatening(sf::Vector2f& ahead, sf::Vector2f& ahead2);
+	float distance(sf::Vector2f a, sf::Vector2f b);
+	bool lineIntersectsObject(sf::Vector2f& ahead, sf::Vector2f& ahead2, sf::Vector2f target);
 
 	float getOrientation(sf::Vector2f vel);
 	void render(sf::RenderWindow & window);
 	void setTexture(sf::Texture& texture);
 	void setArriveSpeed(float nearSpeed);
+	void setAiVec(std::vector<Ai*>& aiVec);
 
 	void truncate(sf::Vector2f& v, float max);
 
@@ -35,6 +39,8 @@ public:
 	void decRotation();
 	void incSpeed();
 	void decSpeed();
+
+	sf::Vector2f & pos() { return m_position; }
 private:
 	sf::RectangleShape m_box;
 	sf::Text m_text;
@@ -53,5 +59,7 @@ private:
 	float m_arriveSpeed;
 
 	int m_halfCone;
+
+	std::vector<Ai*>* m_aiVec;
 };
 

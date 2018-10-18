@@ -54,8 +54,6 @@ void Ai::update()
 	if (type == "Arrive")
 		arriveUpdate();
 
-	collisionAvoidance();
-
 	clampPos(); //Wrap our ai around
 
 	m_sprite.setPosition(m_position); //Set our sprites position
@@ -78,6 +76,7 @@ void Ai::seekUpdate(sf::Vector2f target)
 	desired *= maxSpeed;
 
 	sf::Vector2f steering = desired - m_velocity;
+	steering += collisionAvoidance();
 	truncate(steering, 10.0f);
 
 	m_velocity += steering * dt;
@@ -106,6 +105,7 @@ void Ai::fleeUpdate()
 	desired = normalise(desired) * maxSpeed;
 
 	sf::Vector2f steering = desired - m_velocity;
+	steering += collisionAvoidance();
 	truncate(steering, 10.0f);
 
 	m_velocity += steering * dt;
@@ -141,6 +141,7 @@ void Ai::arriveUpdate()
 		desired = normalise(desired) * maxSpeed;
 
 		sf::Vector2f steering = desired - m_velocity;
+		steering += collisionAvoidance();
 		truncate(steering, 10.0f);
 
 		m_velocity += steering * dt;
@@ -151,18 +152,51 @@ void Ai::arriveUpdate()
 	}
 }
 
-void Ai::collisionAvoidance()
+sf::Vector2f Ai::collisionAvoidance()
 {
-	auto direction = normalise(m_target - m_position);
-	auto orientation = sf::Vector2f(cos(m_rotation), sin(m_rotation));
-	auto dotProd = dot(direction, orientation);
+	float MAX_SEE_AHEAD = 50;
+	sf::Vector2f ahead = m_position + normalise(m_velocity) * MAX_SEE_AHEAD;
+	sf::Vector2f ahead2 = m_position + normalise(m_velocity) * MAX_SEE_AHEAD * .5f;
 
-	auto angle = atan(dotProd) * 57.2958;
-	if (angle < m_halfCone)
-		std::cout << "In cone" << std::endl;
+	auto mostThreatening = findMostThreatening(ahead, ahead2);
+	sf::Vector2f avoidance = sf::Vector2f(0, 0);
 
-	//std::cout << direction.x << " " << direction.y << std::endl;
-	//std::cout << orientation.x << " " << orientation.y << std::endl;
+	if (mostThreatening != sf::Vector2f(0, 0))
+	{
+		avoidance = normalise(ahead - mostThreatening) * 50.0f;
+		std::cout << "avoiding someone" << std::endl;
+	}
+
+	return avoidance;
+}
+
+sf::Vector2f Ai::findMostThreatening(sf::Vector2f& ahead, sf::Vector2f& ahead2)
+{
+	sf::Vector2f vec = sf::Vector2f(0, 0);
+
+	for (auto& ai : *m_aiVec)
+	{
+		if (ai->pos() != m_position) //Loop while its not me
+		{
+			bool col = lineIntersectsObject(ahead, ahead2, ai->pos());
+
+			if (col && (vec == sf::Vector2f(0,0) || distance(m_position, ai->pos()) < distance(m_position, vec))) {
+				vec = ai->pos();
+			}
+		}
+	}
+
+	return vec;
+}
+
+float Ai::distance(sf::Vector2f a, sf::Vector2f b)
+{
+	return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+bool Ai::lineIntersectsObject(sf::Vector2f & ahead, sf::Vector2f & ahead2, sf::Vector2f target)
+{
+	return distance(target, ahead) <= 400 || distance(target, ahead2) <= 400;
 }
 
 float Ai::getOrientation(sf::Vector2f vel)
@@ -198,6 +232,11 @@ void Ai::setTexture(sf::Texture & texture)
 void Ai::setArriveSpeed(float nearSpeed)
 {
 	m_arriveSpeed = nearSpeed;
+}
+
+void Ai::setAiVec(std::vector<Ai*>& aiVec)
+{
+	m_aiVec = &aiVec;
 }
 
 void Ai::truncate(sf::Vector2f & v, float max)
