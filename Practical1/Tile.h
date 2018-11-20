@@ -10,25 +10,31 @@ public:
 	void draw(sf::RenderWindow& window);
 
 	void setAsObstacle();
+	void setAsGoal();
 	void setColor(sf::Color col);
 	void resetColor();
 	void setCost(int cost);
 	void setVisited(bool visited) { m_visited = visited; }
 	void setIntGridPos(int r, int c);
+	void resetTile();
 	int& getCost() { return m_cost; }
 	bool& getVisited() { return m_visited; }
 	sf::Vector2f& getPos() { return m_pos; }
 	std::string& getGridPos() { return m_gridPos; }
 	std::pair<int, int>& getIntGridPos() { return m_gridIntPos; };
 	bool& isObstacle() { return m_isObstacle; }
+	bool& isGoal() { return m_isGoal; }
+	sf::IntRect& getCollisionBox() { return m_colBox; }
 private:
 	std::pair<int, int> m_gridIntPos;
 	sf::Vector2f m_pos;
 	std::string m_gridPos;
 	sf::Text m_text;
 	sf::RectangleShape m_rect;
+	sf::IntRect m_colBox;
 	int m_cost;
 	bool m_visited;
 	bool m_isObstacle;
+	bool m_isGoal;
 };
 

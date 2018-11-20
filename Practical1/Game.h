@@ -1,5 +1,6 @@
 #pragma once
 #include "Map.h"
+#include "InputHandler.h"
 
 //Game loop
 class Game
@@ -17,4 +18,5 @@ private:
 
 	//Lab specific variables
 	Map m_map;
+	InputHandler m_inputHandler;
 };

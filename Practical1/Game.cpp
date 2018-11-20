@@ -4,14 +4,15 @@
 static sf::Int32 MS_PER_UPDATE = 10;
 
 Game::Game() :
-	m_window(sf::VideoMode(2000, 2000), "AI Lab - Vector Field")
+	m_window(sf::VideoMode(2000, 2000), "AI Lab - Vector Field"),
+	m_inputHandler(m_window)
 {
 	init();
 }
 
 void Game::init()
 {
-	m_window.setVerticalSyncEnabled(true); //Set FPS limit to screen refresh rate
+	//m_window.setVerticalSyncEnabled(true); //Set FPS limit to screen refresh rate
 
 	//Setup 50x50 map with tiles
 	for (int r = 0; r < 50; r++)
@@ -27,7 +28,7 @@ void Game::init()
 		}
 	}
 
-	m_map.BFS("24,24"); //Start at the center
+	m_map.BFS("24,24"); //Start here
 }
 
 void Game::run()
@@ -73,7 +74,9 @@ void Game::processEvents()
 
 void Game::update()
 {
+	m_map.update();
 
+	m_inputHandler.update(m_map);
 }
 
 void Game::render()
@@ -81,6 +84,8 @@ void Game::render()
 	m_window.clear(sf::Color::Black); //Clear all previously drawn items
 
 	m_map.draw(m_window); //Draw the map
+
+	m_inputHandler.draw();
 
 	m_window.display(); //Display all drawn items
 }
