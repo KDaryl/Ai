@@ -13,22 +13,7 @@ Game::Game() :
 void Game::init()
 {
 	//m_window.setVerticalSyncEnabled(true); //Set FPS limit to screen refresh rate
-
-	//Setup 50x50 map with tiles
-	for (int r = 0; r < 50; r++)
-	{
-		for (int c = 0; c < 50; c++)
-		{
-			auto gPos = std::to_string(c) + "," + std::to_string(r); //Create string to make a grid position in the format '1,1' 
-			auto tSize = m_map.TileSize();
-			auto pos = sf::Vector2f(r * tSize, c * tSize);
-			auto tile = new Tile(tSize, pos, gPos, m_map.Font()); //Create the tile
-			m_map.addTile(gPos, tile); //Add tile to the map
-			tile->setIntGridPos(c, r);
-		}
-	}
-
-	m_map.BFS("24,24"); //Start here
+	m_inputHandler.setStartTile(*m_map.getTiles()["24,24"]);
 }
 
 void Game::run()

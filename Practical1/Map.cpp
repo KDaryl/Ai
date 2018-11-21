@@ -5,12 +5,29 @@ Map::Map() :
 	m_isGoalSet(false),
 	m_tileSize(40),
 	m_goalTile(nullptr),
-	m_continueBFS(false)
+	m_continueBFS(false),
+	m_showingPath(false)
 {
 	if (!m_font.loadFromFile("ARIALBOLD.TTF"))
 	{
 		throw("File not found");
 	}
+
+	//Setup 50x50 map with tiles
+	for (int r = 0; r < 50; r++)
+	{
+		for (int c = 0; c < 50; c++)
+		{
+			auto gPos = std::to_string(c) + "," + std::to_string(r); //Create string to make a grid position in the format '1,1' 
+			auto tSize =  m_tileSize;
+			auto pos = sf::Vector2f(r * tSize, c * tSize);
+			auto tile = new Tile(tSize, pos, gPos, m_font); //Create the tile
+			addTile(gPos, tile); //Add tile to the map
+			tile->setIntGridPos(c, r);
+		}
+	}
+
+	BFS("24,24"); //Start here
 }
 
 Map::~Map()
@@ -20,8 +37,20 @@ Map::~Map()
 void Map::update()
 {
 	if (m_continueBFS)
-	{
 		BFS();
+
+	if (m_visualiser)
+	{
+		m_visualiser->update();
+
+		//Do this after visual has reached the goal
+		if(m_visualiser->pos() == m_pathTaken.at(0)->getPos())
+			m_showingPath = false; 
+
+		if (m_visualiser->pathDone())
+		{
+			m_showingPath = false;
+		}
 	}
 }
 
@@ -29,6 +58,16 @@ void Map::draw(sf::RenderWindow & window)
 {
 	for (auto& tile : m_tiles)
 		tile.second->draw(window);
+
+	for (auto& tile : m_whitePath)
+	{
+		tile->draw(window);
+	}
+
+	if (m_visualiser)
+	{
+		m_visualiser->draw(window);
+	}
 }
 
 void Map::addTile(std::string tileName, Tile* tile)
@@ -40,7 +79,7 @@ void Map::resetMap()
 {
 	for (auto& tile : m_tiles)
 	{
-		tile.second->resetColor();
+		tile.second->resetColor(false);
 		tile.second->setCost(0);
 		tile.second->setVisited(false);
 	}
@@ -48,11 +87,14 @@ void Map::resetMap()
 
 void Map::BFS(std::string pos)
 {
+	typedef std::pair<int, int> pair; //Type def for std pair of int's
+
 	m_bfsClock.restart(); //Start the BFS clock
 
 	//If we are not continuing from a previous BFS then reset tiles and start the queue out
 	if (m_continueBFS == false)
 	{
+		m_showingPath = false;
 		//Reset tiles
 		for (auto& tile : m_tiles)
 		{
@@ -68,6 +110,7 @@ void Map::BFS(std::string pos)
 		m_tiles[pos]->setVisited(true); //Set the starting node as visited
 
 		m_startTile = m_tiles[pos]; //Set the start tile
+		m_startTile->setStart(true); //Set the strat boolean
 
 		m_prevBfsQueue.push_back(m_tiles[pos]);
 	}
@@ -83,88 +126,28 @@ void Map::BFS(std::string pos)
 		}
 
 
+
 		auto gPos = m_prevBfsQueue.front()->getIntGridPos(); //Get the integer values of the grid position
 		auto cPos = gPos;
 		auto originalCost = m_prevBfsQueue.front()->getCost(); //Get the cost from the previous tile
 
-		//Get all adjacent tiles and add them to the queue
-
-		if (gPos.first == 24 && gPos.second == 0)
+		//Generate the positions for all adjacent tiles
+		std::vector<std::pair<int, int>> adj = { pair(cPos.first - 1, cPos.second),pair(cPos.first + 1, cPos.second),pair(cPos.first, cPos.second - 1),
+												 pair(cPos.first, cPos.second + 1), pair(cPos.first + 1, cPos.second + 1), pair(cPos.first + 1, cPos.second - 1),
+												 pair(cPos.first - 1, cPos.second - 1),pair(cPos.first - 1, cPos.second + 1)};
+		//Get all adjacent tiles and add the valid ones to the queue
+		for (auto& val : adj)
 		{
-			int x = 0;
-		}
-
-		//Check left of this Tile
-		cPos.first--;
-		if (cPos.first >= 0)
-		{
-			tryAddToQueue(cPos, gPos, originalCost, m_prevBfsQueue);
-		}
-		cPos = gPos;
-
-		//Checking the right of this Tile
-		cPos.first++;
-		if (cPos.first < 50)
-		{
-			tryAddToQueue(cPos, gPos, originalCost, m_prevBfsQueue);
-		}
-		cPos = gPos;
-
-		//Checking the top of this Tile
-		cPos.second--;
-		if (cPos.second >= 0)
-		{
-			tryAddToQueue(cPos, gPos, originalCost, m_prevBfsQueue);
-		}
-		cPos = gPos;
-
-		//Checking the Bottom of this Tile
-		cPos.second++;
-		if (cPos.second < 50)
-		{
-			tryAddToQueue(cPos, gPos, originalCost, m_prevBfsQueue);
-		}
-		cPos = gPos;
-
-		//Checking the Bottom right of this Tile
-		cPos.second++;
-		cPos.first++;
-		if (cPos.second < 50 && cPos.first < 50)
-		{
-			tryAddToQueue(cPos, gPos, originalCost, m_prevBfsQueue);
-		}
-		cPos = gPos;
-
-		//Checking the Top right of this Tile
-		cPos.second--;
-		cPos.first++;
-		if (cPos.second >= 0 && cPos.first < 50)
-		{
-			tryAddToQueue(cPos, gPos, originalCost, m_prevBfsQueue);
-		}
-		cPos = gPos;
-
-		//Checking the Top Left of this Tile
-		cPos.second--;
-		cPos.first--;
-		if (cPos.second >= 0 && cPos.first >= 0)
-		{
-			tryAddToQueue(cPos, gPos, originalCost, m_prevBfsQueue);
-		}
-		cPos = gPos;
-
-		//Checking the Bottom Left of this Tile
-		cPos.second++;
-		cPos.first--;
-		if (cPos.second < 50 && cPos.first >= 0)
-		{
-			tryAddToQueue(cPos, gPos, originalCost, m_prevBfsQueue);
+			if (val.first >= 0 && val.first < 50 && val.second < 50 && val.second >= 0)
+			{
+				tryAddToQueue(val, gPos, originalCost, m_prevBfsQueue);
+			}
 		}
 
 		m_prevBfsQueue.pop_front(); //Pop at the end
 	}
 
-	if (m_prevBfsQueue.empty()) //If BFS completed, set our unvisitable tiles and reset our variables
+	if (m_prevBfsQueue.empty()) //If BFS completed, set our unvisitable tiles
 	{
 		m_continueBFS = false;
 		for (auto& tile : m_tiles)
@@ -199,12 +182,103 @@ void Map::setGoal(Tile & tile)
 		}
 		else
 		{
-			m_goalTile->resetColor();
+			m_goalTile->resetColor(true);
 		}
 	}
 
 	m_goalTile = &tile;
 	m_goalTile->setAsGoal();
+}
+
+void Map::aStar(Tile* goal)
+{
+	typedef std::pair<int, int> pair; //Type def for std pair of int's
+
+	if (!goal) //If to is a nullptr then return as we dont have a destination
+		return;
+
+	//Caluclate H and reset visited
+	for (auto& tile : m_tiles)
+	{
+		tile.second->calculateH(goal);
+		tile.second->setVisited(false);
+		tile.second->setF(tile.second->heuristic() + tile.second->getCost());
+		tile.second->setPrevious(nullptr); //Reset previous ptr's
+	}
+
+	m_startTile->setVisited(true);
+
+	std::list<Tile*> queue; //Create queue
+	queue.push_back(m_startTile);
+
+
+	while (!queue.empty())
+	{
+		auto& current = queue.front(); //Get current tile
+		
+		if (current == goal) //If we reached our goal then break
+			break;
+
+		auto gPos = current->getIntGridPos(); //Get the integer values of the grid position
+
+		//Generate the grid positions for all adjacent tiles
+		std::vector<std::pair<int, int>> adj = { pair(gPos.first - 1, gPos.second),pair(gPos.first + 1, gPos.second),pair(gPos.first, gPos.second - 1),
+			pair(gPos.first, gPos.second + 1), pair(gPos.first + 1, gPos.second + 1), pair(gPos.first + 1, gPos.second - 1),
+			pair(gPos.first - 1, gPos.second - 1),pair(gPos.first - 1, gPos.second + 1) };
+
+		//Get all adjacent tiles and add the valid ones to the queue
+		for (auto& val : adj)
+		{
+			//If the tile is valid and in range
+			if (val.first >= 0 && val.first < 50 && val.second < 50 && val.second >= 0)
+			{
+				auto child = m_tiles[stringify(val.first, val.second)]; //Get the adjacent tile
+
+				auto newCost = current->getCost() + 1; //Get the cost to this tile
+
+				//if the child has not been visted and its not an obstacle or the cost is less than the total cost so far
+				if ((!child->getVisited() || newCost < child->getCost()) && !child->isObstacle())
+				{
+					child->setVisited(true);
+					child->setCost(newCost);
+					child->setPrevious(current); //Set previous
+					queue.push_back(child);
+				}
+			}
+		}
+		queue.pop_front();
+		queue.sort(FComparator());
+	}
+
+	auto prev = goal;
+
+	for (auto& tile : m_pathTaken)
+	{
+		if (tile->isObstacle() == false)
+		{
+			tile->setOutlineColor(sf::Color::Black, 255);
+			tile->resetColor(true);
+		}
+	}
+
+	m_whitePath.clear(); //Reset the vector
+	m_pathTaken.clear(); //Clear the path taken vector
+
+	while (prev != nullptr)
+	{
+		m_pathTaken.push_back(prev); //Add to the path taken
+		prev->setOutlineColor(sf::Color(47, 239, 236), 255);
+		//prev->setColor(sf::Color::White);
+		m_whitePath.push_back(prev);
+		prev = &prev->previous();
+	}
+	//Set to true so we can draw and show the path
+	m_showingPath = true;
+
+	//Delete the previous visualiser if we had one
+	if (m_visualiser)
+		delete m_visualiser;
+	m_visualiser = new Visualiser(m_startTile->getPos(), m_pathTaken);
 }
 
 std::string Map::stringify(int r, int c)

@@ -2,6 +2,7 @@
 #include "SFML/Graphics.hpp"
 
 class Map;
+class Tile;
 
 //Used to handle key presses, set default values to false
 struct Input
@@ -11,6 +12,7 @@ struct Input
 	bool ONE_BUTTON = false;
 	bool TWO_BUTTON = false;
 	bool THREE_BUTTON = false;
+	bool SPACE = false;
 };
 
 class InputHandler
@@ -20,6 +22,7 @@ public:
 	void update(Map& map);
 	void draw();
 	void checkInput();
+	void setStartTile(Tile& start) { m_startTile = &start; };
 	void setBooleans(bool placeS, bool placeG, bool placeO);
 	double distance(sf::Vector2f a, sf::Vector2f b) { return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2)); };
 private:
@@ -30,4 +33,5 @@ private:
 	bool m_placeStart;
 	bool m_placeGoal;
 	bool m_placeObstacle;
+	Tile* m_startTile;
 };

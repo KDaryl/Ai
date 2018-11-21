@@ -6,7 +6,8 @@ Tile::Tile(int size, sf::Vector2f pos, std::string gridPos, sf::Font& font):
 	m_text("0,0",font),
 	m_gridPos(gridPos),
 	m_isObstacle(false),
-	m_isGoal(false)
+	m_isGoal(false),
+	m_isStart(false)
 {
 	m_rect.setSize(sf::Vector2f(size, size));
 	m_rect.setFillColor(sf::Color(27, 93, 214));
@@ -55,13 +56,22 @@ void Tile::setAsGoal()
 
 void Tile::setColor(sf::Color col)
 {
+
 	m_rect.setFillColor(col);
 }
 
-void Tile::resetColor()
+void Tile::resetColor(bool useAlpha)
 {
-	m_rect.setFillColor(sf::Color(27, 93, 214)); //Reset the colour to the normal blue
-	m_text.setFillColor(sf::Color::White);
+	if (useAlpha)
+	{
+		m_rect.setFillColor(sf::Color(27, 93, 214, m_alpha));
+		m_text.setFillColor(sf::Color(255,255,255, m_alpha));
+	}
+	else
+	{
+		m_rect.setFillColor(sf::Color(27, 93, 214));
+		m_text.setFillColor(sf::Color::White);
+	}
 	m_isObstacle = false;
 	m_isGoal = false;
 	setCost(m_cost);
@@ -76,14 +86,18 @@ void Tile::setCost(int cost)
 
 	m_cost = cost;
 	m_text.setString(std::to_string(m_cost));
-	auto col = m_rect.getFillColor();
-	col.a = 255 - (255 * (cost / 100.0f));
-	auto tCol = m_text.getFillColor();
-	tCol.a = col.a;
-	m_rect.setFillColor(col);
+	if (m_isObstacle == false && m_isGoal == false)
+	{
+		m_alpha = 255 - (255 * (cost / 100.0f));
+		auto col = m_rect.getFillColor();
+		col.a = m_alpha;
+		auto tCol = m_text.getFillColor();
+		tCol.a = m_alpha;
+		m_rect.setFillColor(col);
+		m_text.setFillColor(tCol);
+	}
 	m_text.setOrigin(m_text.getLocalBounds().left + m_text.getLocalBounds().width / 2.0f, m_text.getLocalBounds().top + m_text.getLocalBounds().height / 2.0f);
 	m_text.setPosition(m_pos);
-	m_text.setFillColor(tCol);
 }
 
 void Tile::setIntGridPos(int r, int c)
@@ -98,4 +112,16 @@ void Tile::resetTile()
 	setColor(sf::Color(27, 93, 214));
 	m_isObstacle = false;
 	setCost(0);
+}
+
+void Tile::setOutlineColor(sf::Color color, int alpha)
+{
+	sf::Color c(color.r, color.g, color.b, alpha);
+	m_rect.setOutlineColor(c);
+}
+
+//Calculates heuristic for A* algorithm
+void Tile::calculateH(Tile * goal)
+{
+	m_h = abs(m_gridIntPos.first - goal->getIntGridPos().first) + abs(m_gridIntPos.second - goal->getIntGridPos().second);
 }

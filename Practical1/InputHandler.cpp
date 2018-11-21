@@ -20,76 +20,93 @@ void InputHandler::update(Map& map)
 {
 	checkInput(); //Check for input
 
-	//Handle key presses
-	if (m_current.ONE_BUTTON && !m_previous.ONE_BUTTON)
-		setBooleans(true, false, false);
-	if (m_current.TWO_BUTTON && !m_previous.TWO_BUTTON)
-		setBooleans(false, true, false);
-	if (m_current.THREE_BUTTON && !m_previous.THREE_BUTTON)
-		setBooleans(false, false, true);
-
-	//If the map is not doing BFS then we can manipulate it
-	if (map.continueBfs() == false)
+	//Only allow input if th emap is not showing a path
+	if (!map.showingPath())
 	{
-		if (m_current.LEFT_MOUSE && !m_previous.LEFT_MOUSE) //If we left mouse clicked
+		//Handle key presses
+		if (m_current.ONE_BUTTON && !m_previous.ONE_BUTTON)
+			setBooleans(true, false, false);
+		if (m_current.TWO_BUTTON && !m_previous.TWO_BUTTON)
+			setBooleans(false, true, false);
+		if (m_current.THREE_BUTTON && !m_previous.THREE_BUTTON)
+			setBooleans(false, false, true);
+
+		//If the map is not doing BFS then we can manipulate it
+		if (map.continueBfs() == false)
 		{
-			std::cout << "Left Mouse click" << std::endl;
-
-			//If we are placing our start tile!
-			if (m_placeStart)
+			//If space bar is pressed, run A star to the goal
+			if (m_current.SPACE && !m_previous.SPACE)
 			{
-				for (auto& tile : map.getTiles())
+				std::cout << "Running A*" << std::endl;
+
+				map.aStar(map.getGoal()); //Run aStar on the map
+			}
+
+			if (m_current.LEFT_MOUSE && !m_previous.LEFT_MOUSE) //If we left mouse clicked
+			{
+				std::cout << "Left Mouse click" << std::endl;
+
+				//If we are placing our start tile!, we can only place it on tiles that are not the goal or obstacles
+				if (m_placeStart)
 				{
-					if (tile.second->getCollisionBox().intersects(m_collisionBox))
+					for (auto& tile : map.getTiles())
 					{
-						map.BFS(tile.second->getGridPos());
-						break;
+						if (tile.second->getCollisionBox().intersects(m_collisionBox) && !tile.second->isGoal() && !tile.second->isObstacle())
+						{
+							if (m_startTile)
+								m_startTile->setStart(false);
+							tile.second->setStart(true);
+							m_startTile = tile.second;
+							map.BFS(tile.second->getGridPos());
+							break;
+						}
+					}
+
+				}
+
+				//If we are placing an obstacle, we can only place obstacles on empty tiles (not goal or start)
+				if (m_placeObstacle)
+				{
+					for (auto& tile : map.getTiles())
+					{
+						if (tile.second->getCollisionBox().intersects(m_collisionBox) && !tile.second->isGoal() && !tile.second->isStart()) //Place if not the start or goal
+						{
+							tile.second->setAsObstacle(); //Set this tile as an obstacle
+							//map.BFS(); //Run BFS using the last set start tile
+							break;
+						}
 					}
 				}
 
-			}
-
-			//If we are placing an obstacle
-			if (m_placeObstacle)
-			{
-				for (auto& tile : map.getTiles())
+				//Place goal on an empty tile
+				if (m_placeGoal)
 				{
-					if (tile.second->getCollisionBox().intersects(m_collisionBox) && !tile.second->isGoal()) //Place if not the start or goal
+					for (auto& tile : map.getTiles())
 					{
-						tile.second->setAsObstacle(); //Set this tile as an obstacle
-						map.BFS(); //Run BFS using the last set start tile
-						break;
+						if (tile.second->getCollisionBox().intersects(m_collisionBox) && !tile.second->isObstacle() && !tile.second->isStart())
+						{
+							map.setGoal(*tile.second); //Set this tile as the goal
+							break;
+						}
 					}
 				}
 			}
 
-			if (m_placeGoal)
+			if (m_current.RIGHT_MOUSE && !m_previous.RIGHT_MOUSE)
 			{
-				for (auto& tile : map.getTiles())
-				{
-					if (tile.second->getCollisionBox().intersects(m_collisionBox) && !tile.second->isObstacle())
-					{
-						map.setGoal(*tile.second); //Set this tile as the goal
-						break;
-					}
-				}
-			}
-		}
+				std::cout << "Right Mouse click" << std::endl;
 
-		if (m_current.RIGHT_MOUSE && !m_previous.RIGHT_MOUSE)
-		{
-			std::cout << "Right Mouse click" << std::endl;
-
-			//If we are removing an obstacle
-			if (m_placeObstacle)
-			{
-				for (auto& tile : map.getTiles())
+				//If we are removing an obstacle
+				if (m_placeObstacle)
 				{
-					if (tile.second->getCollisionBox().intersects(m_collisionBox) && tile.second->isObstacle())
+					for (auto& tile : map.getTiles())
 					{
-						tile.second->resetTile(); //Reset this tile if it is an obstacle
-						map.BFS(); //Run BFS using the last set start tile
-						break;
+						if (tile.second->getCollisionBox().intersects(m_collisionBox) && tile.second->isObstacle())
+						{
+							tile.second->resetTile(); //Reset this tile if it is an obstacle
+							map.BFS(); //Run BFS using the last set start tile
+							break;
+						}
 					}
 				}
 			}
@@ -120,6 +137,7 @@ void InputHandler::checkInput()
 	m_current.ONE_BUTTON = sf::Keyboard::isKeyPressed(sf::Keyboard::Num1); //Checking 1 press
 	m_current.TWO_BUTTON = sf::Keyboard::isKeyPressed(sf::Keyboard::Num2); //Checking 2 press
 	m_current.THREE_BUTTON = sf::Keyboard::isKeyPressed(sf::Keyboard::Num3); //Checking 3 press
+	m_current.SPACE = sf::Keyboard::isKeyPressed(sf::Keyboard::Space); //Checking Space bar press
 }
 
 void InputHandler::setBooleans(bool placeS, bool placeG, bool placeO)

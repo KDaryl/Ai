@@ -24,12 +24,15 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="Visualiser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="Line.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Tile.h" />
+    <ClInclude Include="Visualiser.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
