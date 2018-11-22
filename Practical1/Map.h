@@ -22,10 +22,10 @@ public:
 
 	void addTile(std::string tileName, Tile* tile);
 	void resetMap();
-	void BFS(std::string from);
-	void BFS();
+	void BFS(Tile* from, Tile* goal);
 	void setGoal(Tile& tile);
-	void aStar(Tile* to);
+	//void aStar(Tile* to);
+	void toggleCosts();
 
 	int& TileSize() { return m_tileSize; }
 	sf::Font& Font() { return m_font; }
@@ -34,6 +34,7 @@ public:
 	std::string stringify(std::pair<int,int> p); //Method that converts 2 integers value sinto a string (a readable grid position)
 	std::map<std::string, Tile*>& getTiles() { return m_tiles; }
 	Tile* getGoal() { return m_goalTile; }
+	Tile* getStart() { return m_startTile; }
 	bool& isGoalSet() { return m_isGoalSet; }
 	bool& continueBfs() { return m_continueBFS; }
 	bool showingPath() { return m_showingPath; }
@@ -56,6 +57,8 @@ private:
 	std::vector<Tile*> m_whitePath; //All of the tiles that were changed to white to show the path
 	std::vector<Tile*> m_pathTaken; //The path to take after a star
 	bool m_showingPath;
-	Visualiser* m_visualiser;
+	Visualiser m_visualiser;
+	float m_maxCost; //Used to determine the max cost generated during BFS for the heatmap to generate correctly
+	bool m_foundPath; // Used to find a path to the goal
 };
 

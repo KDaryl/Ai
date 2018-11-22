@@ -9,27 +9,30 @@ InputHandler::InputHandler(sf::RenderWindow& win) :
 	m_placeObstacle(false),
 	m_collisionBox(0, 0, 5, 5)
 {
-	m_mouseRect.setSize(sf::Vector2f(5,5));
-	m_mouseRect.setOutlineColor(sf::Color::Green);
-	m_mouseRect.setFillColor(sf::Color::Transparent);
-	m_mouseRect.setOutlineThickness(5);
-	m_mouseRect.setOrigin(2.5f, 2.5f);
+	m_mouseCircle.setRadius(2.5f);
+	m_mouseCircle.setOutlineColor(sf::Color::Green);
+	m_mouseCircle.setFillColor(sf::Color::Green);
+	m_mouseCircle.setOutlineThickness(5);
+	m_mouseCircle.setOrigin(2.5f, 2.5f);
 }
 
 void InputHandler::update(Map& map)
 {
 	checkInput(); //Check for input
 
+	if (m_current.TAB && !m_previous.TAB)
+		map.toggleCosts();
+
 	//Only allow input if th emap is not showing a path
 	if (!map.showingPath())
 	{
 		//Handle key presses
 		if (m_current.ONE_BUTTON && !m_previous.ONE_BUTTON)
-			setBooleans(true, false, false);
+			setBooleans(true, false, false, sf::Color::Green);
 		if (m_current.TWO_BUTTON && !m_previous.TWO_BUTTON)
-			setBooleans(false, true, false);
+			setBooleans(false, true, false, sf::Color::Red);
 		if (m_current.THREE_BUTTON && !m_previous.THREE_BUTTON)
-			setBooleans(false, false, true);
+			setBooleans(false, false, true, sf::Color::Yellow);
 
 		//If the map is not doing BFS then we can manipulate it
 		if (map.continueBfs() == false)
@@ -37,14 +40,12 @@ void InputHandler::update(Map& map)
 			//If space bar is pressed, run A star to the goal
 			if (m_current.SPACE && !m_previous.SPACE)
 			{
-				std::cout << "Running A*" << std::endl;
 
-				map.aStar(map.getGoal()); //Run aStar on the map
+				map.BFS(map.getStart(), map.getGoal()); //Run BFS on the map on the map
 			}
 
 			if (m_current.LEFT_MOUSE && !m_previous.LEFT_MOUSE) //If we left mouse clicked
 			{
-				std::cout << "Left Mouse click" << std::endl;
 
 				//If we are placing our start tile!, we can only place it on tiles that are not the goal or obstacles
 				if (m_placeStart)
@@ -57,7 +58,7 @@ void InputHandler::update(Map& map)
 								m_startTile->setStart(false);
 							tile.second->setStart(true);
 							m_startTile = tile.second;
-							map.BFS(tile.second->getGridPos());
+							map.BFS(m_startTile, map.getGoal()); //Run BFS on the map on the map
 							break;
 						}
 					}
@@ -94,7 +95,6 @@ void InputHandler::update(Map& map)
 
 			if (m_current.RIGHT_MOUSE && !m_previous.RIGHT_MOUSE)
 			{
-				std::cout << "Right Mouse click" << std::endl;
 
 				//If we are removing an obstacle
 				if (m_placeObstacle)
@@ -104,7 +104,7 @@ void InputHandler::update(Map& map)
 						if (tile.second->getCollisionBox().intersects(m_collisionBox) && tile.second->isObstacle())
 						{
 							tile.second->resetTile(); //Reset this tile if it is an obstacle
-							map.BFS(); //Run BFS using the last set start tile
+							//map.BFS(); //Run BFS using the last set start tile
 							break;
 						}
 					}
@@ -116,15 +116,15 @@ void InputHandler::update(Map& map)
 
 void InputHandler::draw()
 {
-	m_renderWin->draw(m_mouseRect);
+	m_renderWin->draw(m_mouseCircle);
 }
 
 void InputHandler::checkInput()
 {
 	//Set mouse rectangle position
-	m_mouseRect.setPosition(sf::Mouse::getPosition(*m_renderWin).x, sf::Mouse::getPosition(*m_renderWin).y);
-	m_collisionBox.left = m_mouseRect.getPosition().x - 2.5f;
-	m_collisionBox.top = m_mouseRect.getPosition().y - 2.5f;
+	m_mouseCircle.setPosition(sf::Mouse::getPosition(*m_renderWin).x, sf::Mouse::getPosition(*m_renderWin).y);
+	m_collisionBox.left = m_mouseCircle.getPosition().x - 2.5f;
+	m_collisionBox.top = m_mouseCircle.getPosition().y - 2.5f;
 
 	//Set previous as current
 	m_previous = m_current;
@@ -138,11 +138,15 @@ void InputHandler::checkInput()
 	m_current.TWO_BUTTON = sf::Keyboard::isKeyPressed(sf::Keyboard::Num2); //Checking 2 press
 	m_current.THREE_BUTTON = sf::Keyboard::isKeyPressed(sf::Keyboard::Num3); //Checking 3 press
 	m_current.SPACE = sf::Keyboard::isKeyPressed(sf::Keyboard::Space); //Checking Space bar press
+	m_current.TAB = sf::Keyboard::isKeyPressed(sf::Keyboard::Tab); //Checking for Left Tab press
 }
 
-void InputHandler::setBooleans(bool placeS, bool placeG, bool placeO)
+void InputHandler::setBooleans(bool placeS, bool placeG, bool placeO, sf::Color colour)
 {
 	m_placeStart = placeS;
 	m_placeGoal = placeG;
 	m_placeObstacle = placeO;
+
+	m_mouseCircle.setOutlineColor(colour);
+	m_mouseCircle.setFillColor(colour);
 }

@@ -7,9 +7,10 @@ class Tile;
 class Visualiser
 {
 public:
-	Visualiser(sf::Vector2f pos, std::vector<Tile*>& pathTaken);
-	~Visualiser() {}
+	Visualiser();
+	~Visualiser();
 
+	void setVisualiser(sf::Vector2f pos, std::vector<Tile*>& pathTaken);
 	void update();
 	void draw(sf::RenderWindow& win);
 
@@ -20,7 +21,6 @@ public:
 	sf::Vector2f pos() { return m_circle.getPosition(); }
 	bool& pathDone() { return m_reachedPath; }
 private:
-	float m_speed;
 	sf::CircleShape m_circle;
 	std::vector<sf::Vector2f> m_pathLine; //The path we will draw at runtime
 	sf::Vector2f m_dest, m_position;

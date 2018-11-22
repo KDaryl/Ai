@@ -7,7 +7,8 @@ Tile::Tile(int size, sf::Vector2f pos, std::string gridPos, sf::Font& font):
 	m_gridPos(gridPos),
 	m_isObstacle(false),
 	m_isGoal(false),
-	m_isStart(false)
+	m_isStart(false),
+	m_toggleCost(true)
 {
 	m_rect.setSize(sf::Vector2f(size, size));
 	m_rect.setFillColor(sf::Color(27, 93, 214));
@@ -38,7 +39,8 @@ void Tile::draw(sf::RenderWindow & window)
 {
 	window.draw(m_rect);
 
-	window.draw(m_text);
+	if(m_toggleCost)
+		window.draw(m_text);
 }
 
 void Tile::setAsObstacle()
@@ -100,6 +102,29 @@ void Tile::setCost(int cost)
 	m_text.setPosition(m_pos);
 }
 
+void Tile::setCost(int cost, float maxCostGenerated)
+{
+	if (m_isGoal)
+	{
+		setAsGoal();
+	}
+
+	m_cost = cost;
+	m_text.setString(std::to_string(m_cost));
+	if (m_isObstacle == false && m_isGoal == false)
+	{
+		m_alpha = 255 - (255 * (cost / maxCostGenerated));
+		auto col = m_rect.getFillColor();
+		col.a = m_alpha;
+		auto tCol = m_text.getFillColor();
+		tCol.a = m_alpha;
+		m_rect.setFillColor(col);
+		m_text.setFillColor(tCol);
+	}
+	m_text.setOrigin(m_text.getLocalBounds().left + m_text.getLocalBounds().width / 2.0f, m_text.getLocalBounds().top + m_text.getLocalBounds().height / 2.0f);
+	m_text.setPosition(m_pos);
+}
+
 void Tile::setIntGridPos(int r, int c)
 {
 	m_gridIntPos.first = r;
@@ -112,6 +137,11 @@ void Tile::resetTile()
 	setColor(sf::Color(27, 93, 214));
 	m_isObstacle = false;
 	setCost(0);
+}
+
+void Tile::toggleCost()
+{
+	m_toggleCost = m_toggleCost ? false : true;
 }
 
 void Tile::setOutlineColor(sf::Color color, int alpha)

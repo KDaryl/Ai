@@ -14,11 +14,13 @@ public:
 	void setColor(sf::Color col);
 	void resetColor(bool useAlpha);
 	void setCost(int cost);
+	void setCost(int cost, float maxCostGenerated);
 	void setVisited(bool visited) { m_visited = visited; }
 	void setStart(bool start) { m_isStart = start; }
 	void setIntGridPos(int r, int c);
 	void setPrevious(Tile* tile) { m_aStarPrevious = tile; }
 	void resetTile();
+	void toggleCost();
 	void setOutlineColor(sf::Color color, int alpha);
 	void calculateH(Tile* goal);
 	void setF(double f) { m_f = f; };
@@ -46,6 +48,7 @@ private:
 	bool m_isObstacle;
 	bool m_isGoal;
 	bool m_isStart;
+	bool m_toggleCost;
 	double m_h;
 	double m_f;
 	float m_alpha;

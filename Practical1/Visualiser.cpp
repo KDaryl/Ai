@@ -1,7 +1,20 @@
 #include "Visualiser.h"
 
-Visualiser::Visualiser(sf::Vector2f pos, std::vector<Tile*>& pathTaken)
+Visualiser::Visualiser()
 {
+}
+
+Visualiser::~Visualiser()
+{
+}
+
+void Visualiser::setVisualiser(sf::Vector2f pos, std::vector<Tile*>& pathTaken)
+{
+	//Clear all vectors
+	m_pathLine.clear();
+	m_lines.clear();
+
+
 	m_position = pos;
 	m_circle.setRadius(10);
 	m_circle.setFillColor(sf::Color::Magenta);
@@ -14,6 +27,7 @@ Visualiser::Visualiser(sf::Vector2f pos, std::vector<Tile*>& pathTaken)
 	m_clock.restart(); //Start the clock
 
 	m_reachedPath = false;
+
 }
 
 void Visualiser::update()
@@ -24,7 +38,7 @@ void Visualiser::update()
 		//Add a line from the previous point to the current position
 		m_pathLine.push_back(m_pathTakenPtr->at(m_index)->getPos());
 		m_index--;
-		if(m_index > -1)
+		if (m_index > -1)
 			m_dest = m_pathTakenPtr->at(m_index)->getPos(); //Set the next destination
 	}
 
@@ -36,7 +50,6 @@ void Visualiser::update()
 		if (distance(m_position, m_dest) < 2)
 		{
 			m_reachedPath = true;
-			std::cout << "Visualiser has reached the goal" << std::endl;
 		}
 	}
 
@@ -51,7 +64,7 @@ void Visualiser::draw(sf::RenderWindow & win)
 	//Create all of the lines for the path that we have followed so far
 	for (int i = 0; i < m_pathLine.size(); i++)
 	{
-		//If we have not reache dthe bounds of th evector, make the lines
+		//If we have not reached the bounds of the vector, make the lines
 		if (i + 1 <= m_pathLine.size() - 1)
 		{
 			Line line(m_pathLine.at(i), m_pathLine.at(i+1));
@@ -66,12 +79,14 @@ void Visualiser::draw(sf::RenderWindow & win)
 		line.draw(win, sf::RenderStates::Default);
 	}
 
-	//Draw a line from the previous visited tile to our circle
-	Line currentL(m_position, m_pathTakenPtr->at(m_index + 1)->getPos());
-	currentL.setColor(sf::Color::Magenta);
-	currentL.draw(win, sf::RenderStates::Default);
-
-	win.draw(m_circle);
+	if (m_pathTakenPtr->size() > 0 && m_index <= m_pathTakenPtr->size() -1)
+	{
+		//Draw a line from the previous visited tile to our circle
+		Line currentL(m_position, m_pathTakenPtr->at(m_index + 1)->getPos());
+		currentL.setColor(sf::Color::Magenta);
+		currentL.draw(win, sf::RenderStates::Default);
+		win.draw(m_circle);
+	}
 }
 
 sf::Vector2f Visualiser::lerp(sf::Vector2f a, sf::Vector2f b, float speed)
